@@ -1,0 +1,61 @@
+schema: 1
+story: "epic-001.story-001"
+story_title: "Automated Internet Usage Monitoring Dashboard"
+gate: CONCERNS
+status_reason: "Story has excellent requirements but lacks technical implementation details and has security/performance risks that need addressing."
+reviewer: "Quinn (Test Architect)"
+updated: "2025-08-23T00:00:00Z"
+
+waiver: { active: false }
+
+top_issues:
+  - id: "SEC-001"
+    severity: high
+    finding: "ISP credentials stored locally with encryption but no credential rotation strategy"
+    suggested_action: "Implement credential refresh mechanism and secure key management"
+  - id: "REL-001"
+    severity: high
+    finding: "99% API polling reliability target may be unrealistic given ISP API instability"
+    suggested_action: "Add graceful degradation and offline mode capabilities"
+  - id: "PERF-001"
+    severity: medium
+    finding: "10-minute polling interval may stress budget hosting and ISP API"
+    suggested_action: "Implement exponential backoff and adaptive polling intervals"
+  - id: "TEST-001"
+    severity: medium
+    finding: "No specific testing strategy for ISP API integration and mocking"
+    suggested_action: "Define API mocking strategy and integration test approach"
+  - id: "ARCH-001"
+    severity: medium
+    finding: "Database schema not specified for 12 months of historical data storage"
+    suggested_action: "Design efficient data retention and archival strategy"
+  - id: "REQ-001"
+    severity: low
+    finding: "Notification delivery channels need technical specification"
+    suggested_action: "Detail implementation approach for email, desktop, and web notifications"
+
+risk_summary:
+  totals: { critical: 0, high: 2, medium: 3, low: 1 }
+  recommendations:
+    must_fix: 
+      - "Implement secure credential management with rotation"
+      - "Design realistic API reliability targets with fallback modes"
+    monitor:
+      - "Performance impact of polling frequency on budget hosting"
+      - "ISP API rate limiting and stability patterns"
+      - "Data storage growth and retention costs"
+
+nfr_validation:
+  _assessed: [security, performance, reliability, maintainability]
+  security:
+    status: CONCERNS
+    notes: 'Missing credential rotation strategy and rate limiting protection'
+  performance:
+    status: CONCERNS  
+    notes: 'Aggressive 10-minute polling may stress budget hosting resources'
+  reliability:
+    status: CONCERNS
+    notes: '99% polling reliability target unrealistic without fallback mechanisms'
+  maintainability:
+    status: CONCERNS
+    notes: 'Missing testing strategy and database schema design'
