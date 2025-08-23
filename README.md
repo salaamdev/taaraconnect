@@ -2,6 +2,14 @@
 
 A comprehensive internet data usage monitoring system for Taara internet subscribers. This application automatically scrapes your data usage from the Taara API and provides beautiful visualizations and analytics.
 
+## 📋 Quick Links
+
+- **🌐 [User Guide](docs/USER_GUIDE.md)** - How to use the dashboard
+- **🔧 [System Admin Guide](docs/SYSTEM_ADMIN_GUIDE.md)** - Installation and maintenance
+- **💻 [Developer Guide](docs/DEVELOPER_GUIDE.md)** - Development and API documentation
+- **📊 [Testing Report](docs/TESTING_REPORT.md)** - Comprehensive test results
+- **⚡ [Quick Reference](docs/QUICK_REFERENCE.md)** - Commands and emergency procedures
+
 ## Features
 
 - **Real-time Data Monitoring**: Automatically collects data usage every 15 minutes
