@@ -1,0 +1,309 @@
+---
+# Ansible Playbook for Taara Internet Monitoring System Deployment
+# This addresses the Infrastructure as Code requirement identified in PO checklist
+
+- name: Deploy Taara Internet Monitoring System
+  hosts: all
+  become: yes
+  vars:
+    app_name: taara-monitoring
+    app_user: "{{ app_name }}"
+    app_dir: "/opt/{{ app_name }}"
+    virtual_env: "{{ app_dir }}/venv"
+    nginx_config_dir: /etc/nginx/sites-available
+    nginx_enabled_dir: /etc/nginx/sites-enabled
+    supervisor_config_dir: /etc/supervisor/conf.d
+    ssl_cert_dir: /etc/letsencrypt/live
+    database_name: "{{ app_name | replace('-', '_') }}"
+    
+  tasks:
+    # System Dependencies and Security
+    - name: Update apt package index
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install system packages
+      apt:
+        name:
+          - python3
+          - python3-pip
+          - python3-venv
+          - python3-dev
+          - nginx
+          - supervisor
+          - postgresql
+          - postgresql-contrib
+          - libpq-dev
+          - certbot
+          - python3-certbot-nginx
+          - ufw
+          - fail2ban
+          - htop
+          - curl
+          - git
+        state: present
+
+    - name: Configure UFW firewall
+      ufw:
+        rule: allow
+        port: "{{ item }}"
+      loop:
+        - ssh
+        - http
+        - https
+
+    - name: Enable UFW
+      ufw:
+        state: enabled
+
+    # Application User Setup
+    - name: Create application user
+      user:
+        name: "{{ app_user }}"
+        system: yes
+        shell: /bin/bash
+        home: "{{ app_dir }}"
+        create_home: yes
+
+    - name: Create application directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        mode: '0755'
+      loop:
+        - "{{ app_dir }}"
+        - "{{ app_dir }}/releases"
+        - "{{ app_dir }}/shared"
+        - "{{ app_dir }}/shared/logs"
+        - "{{ app_dir }}/shared/config"
+        - "/var/log/{{ app_name }}"
+
+    # Database Setup
+    - name: Start and enable PostgreSQL
+      systemd:
+        name: postgresql
+        state: started
+        enabled: yes
+
+    - name: Create application database
+      postgresql_db:
+        name: "{{ database_name }}"
+        encoding: UTF-8
+        locale: en_US.UTF-8
+        template: template0
+      become_user: postgres
+
+    - name: Create database user
+      postgresql_user:
+        name: "{{ app_user }}"
+        password: "{{ database_password }}"
+        db: "{{ database_name }}"
+        priv: ALL
+        role_attr_flags: CREATEDB
+      become_user: postgres
+
+    # Application Deployment
+    - name: Extract application code
+      unarchive:
+        src: "{{ app_artifact_path }}"
+        dest: "{{ app_dir }}/releases"
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        remote_src: "{{ app_artifact_remote | default(false) }}"
+        creates: "{{ app_dir }}/releases/{{ app_version }}"
+
+    - name: Create virtual environment
+      command: python3 -m venv {{ virtual_env }}
+      become_user: "{{ app_user }}"
+      args:
+        creates: "{{ virtual_env }}/bin/activate"
+
+    - name: Install Python dependencies
+      pip:
+        requirements: "{{ app_dir }}/releases/{{ app_version }}/requirements/prod.txt"
+        virtualenv: "{{ virtual_env }}"
+        virtualenv_python: python3
+      become_user: "{{ app_user }}"
+
+    # Configuration Management
+    - name: Template environment configuration
+      template:
+        src: env.j2
+        dest: "{{ app_dir }}/shared/config/.env"
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        mode: '0600'
+
+    - name: Create symlink to current release
+      file:
+        src: "{{ app_dir }}/releases/{{ app_version }}"
+        dest: "{{ app_dir }}/current"
+        state: link
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+
+    - name: Create symlink to shared config
+      file:
+        src: "{{ app_dir }}/shared/config/.env"
+        dest: "{{ app_dir }}/current/.env"
+        state: link
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+
+    # Database Migration
+    - name: Run database setup script
+      command: "{{ virtual_env }}/bin/python scripts/setup_database.py"
+      become_user: "{{ app_user }}"
+      args:
+        chdir: "{{ app_dir }}/current"
+      environment:
+        FLASK_ENV: "{{ environment }}"
+        DATABASE_URL: "postgresql://{{ app_user }}:{{ database_password }}@localhost/{{ database_name }}"
+
+    # Nginx Configuration
+    - name: Template Nginx configuration
+      template:
+        src: nginx.conf.j2
+        dest: "{{ nginx_config_dir }}/{{ app_name }}"
+        backup: yes
+      notify: reload nginx
+
+    - name: Enable Nginx site
+      file:
+        src: "{{ nginx_config_dir }}/{{ app_name }}"
+        dest: "{{ nginx_enabled_dir }}/{{ app_name }}"
+        state: link
+      notify: reload nginx
+
+    - name: Remove default Nginx site
+      file:
+        path: "{{ nginx_enabled_dir }}/default"
+        state: absent
+      notify: reload nginx
+
+    # SSL Certificate
+    - name: Obtain SSL certificate
+      command: >
+        certbot --nginx --non-interactive --agree-tos
+        --email {{ ssl_email }}
+        --domains {{ domain_name }}
+      args:
+        creates: "{{ ssl_cert_dir }}/{{ domain_name }}/fullchain.pem"
+      when: environment == "production"
+
+    # Supervisor Configuration
+    - name: Template Supervisor configuration
+      template:
+        src: supervisor.conf.j2
+        dest: "{{ supervisor_config_dir }}/{{ app_name }}.conf"
+      notify: restart supervisor
+
+    - name: Start and enable Supervisor
+      systemd:
+        name: supervisor
+        state: started
+        enabled: yes
+
+    # Application Service Management
+    - name: Start application via Supervisor
+      supervisorctl:
+        name: "{{ app_name }}"
+        state: started
+      
+    - name: Ensure application is running
+      uri:
+        url: "http://localhost:8000/health"
+        timeout: 30
+      retries: 5
+      delay: 10
+
+    # Monitoring and Logging
+    - name: Configure log rotation
+      template:
+        src: logrotate.j2
+        dest: "/etc/logrotate.d/{{ app_name }}"
+
+    - name: Setup fail2ban for application
+      template:
+        src: fail2ban.conf.j2
+        dest: "/etc/fail2ban/jail.d/{{ app_name }}.conf"
+      notify: restart fail2ban
+
+    # Cleanup old releases
+    - name: Keep only last 3 releases
+      shell: |
+        cd {{ app_dir }}/releases
+        ls -t | tail -n +4 | xargs rm -rf
+      become_user: "{{ app_user }}"
+      ignore_errors: yes
+
+  handlers:
+    - name: reload nginx
+      systemd:
+        name: nginx
+        state: reloaded
+
+    - name: restart supervisor
+      systemd:
+        name: supervisor
+        state: restarted
+
+    - name: restart fail2ban
+      systemd:
+        name: fail2ban
+        state: restarted
+
+# Blue-Green Deployment Tasks
+- name: Blue-Green Deployment Strategy
+  hosts: all
+  become: yes
+  vars:
+    deployment_strategy: blue_green
+  tasks:
+    - name: Check current active deployment
+      shell: readlink {{ app_dir }}/current || echo "none"
+      register: current_deployment
+      become_user: "{{ app_user }}"
+
+    - name: Determine next deployment slot
+      set_fact:
+        next_slot: "{{ 'green' if 'blue' in current_deployment.stdout else 'blue' }}"
+        current_slot: "{{ 'blue' if 'blue' in current_deployment.stdout else 'green' }}"
+
+    - name: Deploy to {{ next_slot }} slot
+      include_tasks: deploy_slot.yml
+      vars:
+        slot: "{{ next_slot }}"
+        slot_dir: "{{ app_dir }}/{{ next_slot }}"
+
+    - name: Health check {{ next_slot }} deployment
+      uri:
+        url: "http://localhost:800{{ '1' if next_slot == 'blue' else '2' }}/health"
+        timeout: 30
+      retries: 5
+      delay: 10
+
+    - name: Switch traffic to {{ next_slot }}
+      template:
+        src: nginx_switch.conf.j2
+        dest: "{{ nginx_config_dir }}/{{ app_name }}"
+        backup: yes
+      vars:
+        active_slot: "{{ next_slot }}"
+      notify: reload nginx
+
+    - name: Final health check
+      uri:
+        url: "https://{{ domain_name }}/health"
+        timeout: 30
+      retries: 3
+      delay: 5
+
+    - name: Stop old deployment
+      supervisorctl:
+        name: "{{ app_name }}-{{ current_slot }}"
+        state: stopped
+      when: current_deployment.stdout != "none"

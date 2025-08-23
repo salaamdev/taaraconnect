@@ -45,24 +45,34 @@ Families with high-speed internet connections and data caps face critical resour
 
 ## Epic Scope & Boundaries
 
-### In Scope
-**Core Infrastructure:**
-- Automated data collection from Taara ISP API every 10 minutes
-- Secure credential management with AES-256 encryption
-- Real-time usage analytics and trend analysis
-- Predictive modeling for end-of-month usage estimates
+### CRITICAL: Prerequisites from EPIC-000
+**This epic CANNOT start until EPIC-000 (Infrastructure Foundation) is 100% complete:**
+- ✅ Database schema operational with migration system
+- ✅ Authentication framework with AES-256 encryption functional
+- ✅ Flask application structure and service architecture established
+- ✅ ISP API mocking system operational for testing
+- ✅ CI/CD pipeline with staging environment deployed
+- ✅ Security framework with credential management system
+- ✅ Testing infrastructure with performance validation
 
-**User Experience:**
-- Web-based dashboard with mobile-responsive design
-- Positive psychology messaging framework (enablement vs. restriction)
-- Proactive notification system across multiple channels
-- Historical data visualization and pattern recognition
+### In Scope - Business Logic Implementation
+**Core Infrastructure Foundation (DEPENDS ON EPIC-000):**
+- Business logic implementation using existing database schema
+- ISP API integration using existing authentication framework
+- Analytics engine using existing service architecture
+- User interface using existing Flask application structure
 
-**Technical Foundation:**
-- Lightweight Flask application with PostgreSQL database
-- RESTful API architecture for future mobile integration
-- Digital Ocean hosting optimized for budget deployment
-- Comprehensive error handling and graceful degradation
+**User Experience Implementation:**
+- Web-based dashboard using existing Bootstrap framework
+- Positive psychology messaging using existing templates
+- Real-time usage analytics using existing API endpoints
+- Proactive notification using existing notification infrastructure
+
+**Technical Integration:**
+- ISP data collection using existing secure credential management
+- Real-time analytics using existing database and processing frameworks
+- Multi-channel notifications using existing email and notification services
+- Performance optimization within existing budget hosting architecture
 
 ### Out of Scope (Future Epics)
 - Device-level usage tracking and per-family-member analytics
@@ -72,9 +82,10 @@ Families with high-speed internet connections and data caps face critical resour
 - Integration with ISPs beyond Taara
 
 ### Dependencies
+- **CRITICAL:** EPIC-000 (Infrastructure Foundation) MUST be complete
 - **External:** Taara ISP API access and authentication capabilities
-- **Technical:** Digital Ocean hosting environment setup
-- **User:** Family cooperation for initial credential setup and testing
+- **Technical:** Staging environment operational with health checks
+- **User:** Family cooperation for initial testing and feedback
 
 ---
 

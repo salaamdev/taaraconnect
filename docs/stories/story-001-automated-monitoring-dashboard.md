@@ -3,9 +3,11 @@
 **Story ID:** STORY-001  
 **Epic:** Core Internet Usage Monitoring System  
 **Created:** August 23, 2025  
+**Updated:** August 23, 2025 (Infrastructure Sequencing Fix)
 **Priority:** P0 (Critical)  
 **Story Points:** 13  
 **Sprint:** Sprint 1-2  
+**Dependencies:** EPIC-000 (Infrastructure Foundation) MUST be complete before starting this story
 
 ---
 
@@ -14,6 +16,16 @@
 **As a** Family Internet Administrator managing our household's 1TB monthly data allocation  
 **I want** an automated monitoring dashboard that shows real-time usage, daily budgets, and trend analytics  
 **So that** I can proactively manage our KES 2500 monthly internet investment without constantly checking the ISP dashboard
+
+## Critical Prerequisites (From EPIC-000)
+
+**BEFORE starting this story, the following infrastructure MUST be operational:**
+- ✅ Database schema created and migration system functional
+- ✅ Authentication framework with AES-256 encryption operational  
+- ✅ Flask application structure with proper service architecture
+- ✅ ISP API mocking system for reliable testing
+- ✅ CI/CD pipeline with staging environment
+- ✅ Security framework with credential management system
 
 ---
 
@@ -26,45 +38,58 @@
 4. **Optimization Guidance:** User receives recommendations for optimal timing of large downloads
 5. **Monthly Planning:** User can confidently plan internet usage knowing remaining allocation and safe consumption rates
 
-### Core Functional Requirements
+### Core Functional Requirements (Properly Sequenced)
 
-#### Automated Data Collection
-- **Requirement:** System polls Taara ISP API every 10 minutes to collect current usage data
-- **Acceptance Criteria:**
-  - Successfully authenticate with user's Taara ISP credentials
-  - Collect usage data with 99% reliability (handle API outages gracefully)
-  - Store raw data with timestamps for trend analysis
-  - Validate data integrity and detect anomalies
-  - Process data within 2 minutes of collection
+#### Phase 1: Service Layer Foundation (EPIC-000 Dependencies)
+**Note:** These components depend on infrastructure from EPIC-000 being complete
 
-#### Real-Time Usage Dashboard
-- **Requirement:** Web-based interface displaying current status and actionable insights
+#### 1. ISP API Integration Service (Uses Authentication Framework)
+- **Requirement:** Integrate with Taara ISP API using pre-built authentication framework
 - **Acceptance Criteria:**
-  - Show current usage vs. 1TB monthly allocation with visual progress indicators
-  - Display "safe time remaining" prominently (e.g., "18 days of normal usage left")
-  - Calculate and show daily budget based on remaining allocation and days in billing cycle
-  - Present trend information comparing current week to previous weeks
-  - Load page in under 2 seconds on desktop and mobile browsers
-  - Responsive design working effectively on phone browsers
+  - Utilize existing AES-256 credential encryption system from EPIC-000
+  - Leverage existing session management framework 
+  - Connect to pre-configured ISP API mock for testing
+  - Use existing database schema for storing usage_readings
+  - Handle API rate limits and errors using existing error handling framework
 
-#### Intelligent Analytics Engine
-- **Requirement:** Convert raw usage data into family-friendly insights and predictions
+#### 2. Data Processing Service (Uses Database Foundation)
+- **Requirement:** Process and validate raw ISP data using existing database schema
 - **Acceptance Criteria:**
-  - Calculate accurate daily usage budgets based on historical patterns
-  - Generate "safe time remaining" metrics using current consumption trajectory
-  - Detect usage pattern anomalies indicating potential month-end overage risk
-  - Provide predictive end-of-month estimates with 90% accuracy by day 15
-  - Identify optimal windows for large downloads based on usage patterns
+  - Store data in pre-created usage_readings table with proper validation
+  - Use existing data integrity checking framework
+  - Leverage existing database migration system for schema updates
+  - Process data within 2 minutes using existing analytics framework structure
 
-#### Proactive Notification System
-- **Requirement:** Deliver timely alerts without overwhelming family members
+#### Phase 2: Analytics Engine (Uses Service Foundation)
+
+#### 3. Usage Analytics Engine (Builds on Service Layer)
+- **Requirement:** Transform raw usage data into family-friendly insights
 - **Acceptance Criteria:**
-  - Send morning status updates with positive, encouraging messaging
-  - Trigger proactive alerts at 75% allocation with optimization recommendations
-  - Deliver weekly summaries celebrating efficiency and providing tips
-  - Notify about large download opportunities when extra capacity is available
-  - Limit to maximum 1 critical alert per day to avoid notification fatigue
-  - Support multiple delivery channels: desktop notifications, email, web dashboard
+  - Calculate daily budgets using data from existing daily_summaries table
+  - Generate "safe time remaining" metrics using existing analytics patterns
+  - Utilize existing anomaly detection framework structure
+  - Provide 90% accurate predictions using existing trend analysis foundation
+
+#### Phase 3: User Interface (Uses Analytics Engine)
+
+#### 4. Web Dashboard Interface (Uses Backend Services)
+- **Requirement:** Display insights using existing Flask application structure
+- **Acceptance Criteria:**
+  - Leverage existing Bootstrap 5.3.2 framework from EPIC-000
+  - Use existing responsive design patterns and templates structure
+  - Connect to existing REST API endpoints from service layer
+  - Implement existing authentication middleware for dashboard access
+  - Achieve <2 second load times using existing performance optimization
+
+#### Phase 4: Notifications (Uses Complete System)
+
+#### 5. Notification System (Uses All Previous Components)
+- **Requirement:** Deliver alerts using existing notification framework
+- **Acceptance Criteria:**
+  - Use existing email service configuration (Flask-Mail setup)
+  - Leverage existing user preferences system for delivery settings
+  - Utilize existing alert_history table for tracking
+  - Implement existing positive psychology messaging framework
 
 ### User Experience Requirements
 
