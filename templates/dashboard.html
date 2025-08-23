@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taara Internet Monitor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card-green {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .stat-card-orange {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+        
+        .stat-card-red {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .data-table {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        body {
+            background-color: #f8f9fa;
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+        }
+        
+        .refresh-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .progress-custom {
+            height: 25px;
+            background-color: #e9ecef;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        
+        .progress-bar-custom {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-wifi"></i> Taara Internet Monitor
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text">
+                    <i class="fas fa-clock"></i> Last updated: <span id="lastUpdate">{{ latest_records[0].timestamp.strftime('%Y-%m-%d %H:%M:%S') if latest_records else 'Never' }}</span>
+                </span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Statistics Cards -->
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0">Current Balance</h6>
+                            <h3 class="mb-0">{{ "%.1f"|format(stats.current_balance) }} GB</h3>
+                        </div>
+                        <i class="fas fa-database fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="stat-card stat-card-green">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0">Days Remaining</h6>
+                            <h3 class="mb-0">{{ stats.days_remaining }}</h3>
+                        </div>
+                        <i class="fas fa-calendar fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="stat-card stat-card-orange">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0">Daily Usage</h6>
+                            <h3 class="mb-0">{{ "%.1f"|format(stats.usage_rate_gb_per_day) }} GB</h3>
+                        </div>
+                        <i class="fas fa-chart-line fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="stat-card stat-card-red">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0">Total Usage</h6>
+                            <h3 class="mb-0">{{ "%.1f"|format(stats.total_usage_gb) }} GB</h3>
+                        </div>
+                        <i class="fas fa-download fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="row">
+            <div class="col-12">
+                <div class="chart-container">
+                    <h5><i class="fas fa-progress-bar"></i> Data Usage Progress</h5>
+                    {% set used_gb = 1000 - stats.current_balance %}
+                    {% set usage_percent = (used_gb / 1000 * 100) if stats.current_balance > 0 else 0 %}
+                    <div class="progress-custom">
+                        <div class="progress-bar-custom" style="width: {{ usage_percent }}%">
+                            {{ "%.1f"|format(used_gb) }} GB used of 1000 GB ({{ "%.1f"|format(usage_percent) }}%)
+                        </div>
+                    </div>
+                    <div class="mt-2 text-muted small">
+                        <i class="fas fa-info-circle"></i> 
+                        {% if usage_percent < 50 %}
+                            You're doing great! Keep it up.
+                        {% elif usage_percent < 80 %}
+                            Watch your usage, you're halfway through.
+                        {% else %}
+                            Be careful! You're running low on data.
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h5><i class="fas fa-chart-area"></i> Balance Over Time</h5>
+                    <div id="balanceChart"></div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h5><i class="fas fa-chart-bar"></i> Daily Usage</h5>
+                    <div id="usageChart"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Data Table -->
+        <div class="row">
+            <div class="col-12">
+                <div class="data-table">
+                    <h5><i class="fas fa-table"></i> Recent Data Points</h5>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Plan</th>
+                                    <th>Balance (GB)</th>
+                                    <th>Days Remaining</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in latest_records %}
+                                <tr>
+                                    <td>{{ record.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                    <td>{{ record.plan_name }}</td>
+                                    <td>{{ "%.1f"|format(record.remaining_balance_gb) }}</td>
+                                    <td>{{ record.expires_in_days }}</td>
+                                    <td>
+                                        {% if record.is_active %}
+                                            <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Refresh Button -->
+    <button class="btn btn-primary refresh-btn" onclick="refreshData()">
+        <i class="fas fa-sync-alt"></i> Refresh
+    </button>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Render charts
+        {% if charts.balance_chart %}
+            var balanceData = {{ charts.balance_chart|safe }};
+            Plotly.newPlot('balanceChart', balanceData.data, balanceData.layout, {responsive: true});
+        {% endif %}
+        
+        {% if charts.usage_chart %}
+            var usageData = {{ charts.usage_chart|safe }};
+            Plotly.newPlot('usageChart', usageData.data, usageData.layout, {responsive: true});
+        {% endif %}
+
+        // Auto-refresh every 5 minutes
+        setInterval(function() {
+            location.reload();
+        }, 300000);
+
+        // Manual refresh function
+        async function refreshData() {
+            const btn = document.querySelector('.refresh-btn');
+            const icon = btn.querySelector('i');
+            
+            btn.disabled = true;
+            icon.classList.add('fa-spin');
+            
+            try {
+                const response = await fetch('/api/collect', {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert('Failed to refresh data');
+                }
+            } catch (error) {
+                alert('Error refreshing data: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                icon.classList.remove('fa-spin');
+            }
+        }
+
+        // Update last update time every second
+        function updateLastUpdateTime() {
+            const lastUpdateElement = document.getElementById('lastUpdate');
+            const currentTime = new Date();
+            const lastUpdateTime = new Date('{{ latest_records[0].timestamp.isoformat() if latest_records else "" }}');
+            
+            if (lastUpdateTime && !isNaN(lastUpdateTime.getTime())) {
+                const timeDiff = Math.floor((currentTime - lastUpdateTime) / 1000);
+                
+                if (timeDiff < 60) {
+                    lastUpdateElement.textContent = `${timeDiff} seconds ago`;
+                } else if (timeDiff < 3600) {
+                    lastUpdateElement.textContent = `${Math.floor(timeDiff / 60)} minutes ago`;
+                } else {
+                    lastUpdateElement.textContent = lastUpdateTime.toLocaleString();
+                }
+            }
+        }
+        
+        // Update time display every 10 seconds
+        setInterval(updateLastUpdateTime, 10000);
+        updateLastUpdateTime();
+    </script>
+</body>
+</html>

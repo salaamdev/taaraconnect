@@ -1,0 +1,166 @@
+{
+  "summary": {
+    "total_tests": 22,
+    "passed": 18,
+    "failed": 3,
+    "warnings": 1,
+    "success_rate": 81.81818181818183
+  },
+  "results": [
+    {
+      "test": "Environment Variables",
+      "status": "FAIL",
+      "message": "Missing: TAARA_PHONE_COUNTRY_CODE, TAARA_PHONE_NUMBER, TAARA_PASSCODE, TAARA_PARTNER_ID, TAARA_HOTSPOT_ID",
+      "execution_time": 0,
+      "timestamp": "2025-08-23T15:16:14.298896"
+    },
+    {
+      "test": "Database File",
+      "status": "PASS",
+      "message": "Found taara_monitoring.db",
+      "execution_time": 0,
+      "timestamp": "2025-08-23T15:16:14.298939"
+    },
+    {
+      "test": "Python Dependencies",
+      "status": "PASS",
+      "message": "All packages available",
+      "execution_time": 0,
+      "timestamp": "2025-08-23T15:16:14.320359"
+    },
+    {
+      "test": "Database Creation",
+      "status": "PASS",
+      "message": "Tables created successfully",
+      "execution_time": 0,
+      "timestamp": "2025-08-23T15:16:14.320882"
+    },
+    {
+      "test": "Database Connection",
+      "status": "PASS",
+      "message": "Connection established",
+      "execution_time": 0,
+      "timestamp": "2025-08-23T15:16:14.321572"
+    },
+    {
+      "test": "Database Write",
+      "status": "PASS",
+      "message": "Test record inserted",
+      "execution_time": 0,
+      "timestamp": "2025-08-23T15:16:14.336732"
+    },
+    {
+      "test": "API Login",
+      "status": "FAIL",
+      "message": "HTTP 404: {\"message\":\"User Not Found\"}",
+      "execution_time": 0,
+      "timestamp": "2025-08-23T15:16:15.113465"
+    },
+    {
+      "test": "Data Collector Init",
+      "status": "PASS",
+      "message": "Collector initialized",
+      "execution_time": 0,
+      "timestamp": "2025-08-23T15:16:15.113666"
+    },
+    {
+      "test": "Data Collection",
+      "status": "PASS",
+      "message": "Collection completed in 2.87s",
+      "execution_time": 0,
+      "timestamp": "2025-08-23T15:16:17.984822"
+    },
+    {
+      "test": "Data Storage",
+      "status": "WARNING",
+      "message": "No recent records found",
+      "execution_time": 0,
+      "timestamp": "2025-08-23T15:16:17.990293"
+    },
+    {
+      "test": "API Latest Data",
+      "status": "PASS",
+      "message": "Status 200, 0.02s",
+      "execution_time": 0,
+      "timestamp": "2025-08-23T15:16:18.009331"
+    },
+    {
+      "test": "API Statistics",
+      "status": "PASS",
+      "message": "Status 200, 0.01s",
+      "execution_time": 0,
+      "timestamp": "2025-08-23T15:16:18.014645"
+    },
+    {
+      "test": "API Usage History",
+      "status": "PASS",
+      "message": "Status 200, 0.00s",
+      "execution_time": 0,
+      "timestamp": "2025-08-23T15:16:18.018008"
+    },
+    {
+      "test": "API Manual Collection",
+      "status": "PASS",
+      "message": "Status 200, 3.05s",
+      "execution_time": 0,
+      "timestamp": "2025-08-23T15:16:21.067739"
+    },
+    {
+      "test": "Dashboard Content",
+      "status": "FAIL",
+      "message": "Missing: ['Usage Rate']",
+      "execution_time": 0,
+      "timestamp": "2025-08-23T15:16:21.435033"
+    },
+    {
+      "test": "Responsive Design",
+      "status": "PASS",
+      "message": "Responsive indicators found",
+      "execution_time": 0,
+      "timestamp": "2025-08-23T15:16:21.435112"
+    },
+    {
+      "test": "Concurrent Requests",
+      "status": "PASS",
+      "message": "10/10 successful, avg: 0.01s",
+      "execution_time": 0,
+      "timestamp": "2025-08-23T15:16:21.461425"
+    },
+    {
+      "test": "Database Performance",
+      "status": "PASS",
+      "message": "100 records in 0.001s",
+      "execution_time": 0,
+      "timestamp": "2025-08-23T15:16:21.463010"
+    },
+    {
+      "test": "Invalid Endpoint /api/invalid",
+      "status": "PASS",
+      "message": "Proper error: 404",
+      "execution_time": 0,
+      "timestamp": "2025-08-23T15:16:21.464976"
+    },
+    {
+      "test": "Invalid Endpoint /api/data/999999",
+      "status": "PASS",
+      "message": "Proper error: 404",
+      "execution_time": 0,
+      "timestamp": "2025-08-23T15:16:21.466658"
+    },
+    {
+      "test": "Invalid Endpoint /nonexistent",
+      "status": "PASS",
+      "message": "Proper error: 404",
+      "execution_time": 0,
+      "timestamp": "2025-08-23T15:16:21.468144"
+    },
+    {
+      "test": "Invalid Credentials",
+      "status": "PASS",
+      "message": "Properly rejected invalid credentials",
+      "execution_time": 0,
+      "timestamp": "2025-08-23T15:16:22.375248"
+    }
+  ],
+  "generated_at": "2025-08-23T15:16:22.376380"
+}
