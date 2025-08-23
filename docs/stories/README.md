@@ -27,7 +27,7 @@
 
 ## Epic Alignment
 
-### Core Internet Usage Monitoring System Epic
+### [EPIC-001: Core Internet Usage Monitoring System](../epic-001-core-internet-monitoring-system.md)
 - STORY-001: Automated Internet Usage Monitoring Dashboard
 
 ### Future Epic Placeholders
