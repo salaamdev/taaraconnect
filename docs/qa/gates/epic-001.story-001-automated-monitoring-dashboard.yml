@@ -2,64 +2,65 @@ schema: 1
 story: "epic-001.story-001"
 story_title: "Automated Internet Usage Monitoring Dashboard"
 gate: CONCERNS
-status_reason: "Excellent requirements but missing critical technical architecture and testing strategy before development can begin."
+status_reason: "Pre-development phase: excellent requirements but critical technical architecture missing before development can begin safely."
 reviewer: "Quinn (Test Architect)"
-updated: "2025-08-23T00:00:00Z"
+updated: "2025-08-23T12:00:00Z"
 
 waiver: { active: false }
 
 top_issues:
   - id: "ARCH-001"
     severity: high
-    finding: "No database schema specified for 12-month historical data storage"
-    suggested_action: "Design efficient database schema with retention and archival strategy"
+    finding: "Database schema completely undefined for 12-month historical data storage and retrieval"
+    suggested_action: "Design efficient database schema with retention policies, indexing strategy, and archival process"
   - id: "ARCH-002"
     severity: high
-    finding: "API integration architecture completely missing"
-    suggested_action: "Define ISP API integration patterns, error handling, and retry logic"
+    finding: "ISP API integration architecture missing error handling, retry logic, and fallback mechanisms"
+    suggested_action: "Define comprehensive API integration patterns with circuit breakers and graceful degradation"
   - id: "TEST-001"
     severity: high
-    finding: "Testing strategy completely undefined for ISP API integration"
-    suggested_action: "Create comprehensive testing strategy with API mocking approach"
+    finding: "Testing strategy completely undefined - no unit, integration, or API mocking approach specified"
+    suggested_action: "Create comprehensive testing strategy with ISP API mocking, test data management, and automation"
   - id: "SEC-001"
     severity: high
-    finding: "ISP credentials stored locally with encryption but no credential rotation strategy"
-    suggested_action: "Implement credential refresh mechanism and secure key management"
+    finding: "Credential management lacks rotation strategy, session policies, and security monitoring"
+    suggested_action: "Implement secure credential lifecycle with rotation, encryption key management, and intrusion detection"
   - id: "REL-001"
     severity: medium
-    finding: "99% API polling reliability target may be unrealistic given ISP API instability"
-    suggested_action: "Add graceful degradation and offline mode capabilities"
+    finding: "99% API polling reliability unrealistic without robust fallback and offline capabilities"
+    suggested_action: "Design adaptive polling with exponential backoff, caching, and offline mode functionality"
   - id: "PERF-001"
     severity: medium
-    finding: "10-minute polling interval may stress budget hosting and ISP API"
-    suggested_action: "Implement exponential backoff and adaptive polling intervals"
+    finding: "10-minute polling frequency may overwhelm budget hosting constraints (512MB RAM, 20% CPU)"
+    suggested_action: "Analyze resource impact and implement intelligent polling with load balancing"
 
 risk_summary:
   totals: { critical: 0, high: 4, medium: 2, low: 0 }
   recommendations:
     must_fix: 
-      - "Create technical architecture document with database and API design"
-      - "Define comprehensive testing strategy with mocking approach"
-      - "Implement secure credential management with rotation"
-      - "Design ISP API integration patterns with error handling"
+      - "Create comprehensive technical architecture document covering all system components"
+      - "Define testing strategy with API mocking and integration test framework"
+      - "Design secure credential management with rotation and monitoring capabilities"
+      - "Specify database schema optimized for time-series data and budget hosting constraints"
     monitor:
-      - "Performance impact of polling frequency on budget hosting"
-      - "ISP API rate limiting and stability patterns"
+      - "ISP API stability patterns and rate limiting behavior during development"
+      - "Hosting resource utilization impact of polling frequency and data processing"
+      - "Security threat landscape for ISP credential management and data protection"
 
 nfr_validation:
   _assessed: [security, performance, reliability, maintainability]
   security:
     status: CONCERNS
-    notes: 'Missing credential rotation strategy and rate limiting protection'
+    notes: 'Missing credential rotation, security monitoring, and comprehensive threat model'
   performance:
     status: CONCERNS  
-    notes: 'Aggressive 10-minute polling may stress budget hosting resources'
+    notes: 'Aggressive polling may exceed budget hosting capacity; optimization strategy undefined'
   reliability:
     status: CONCERNS
-    notes: '99% polling reliability target unrealistic without fallback mechanisms'
+    notes: '99% target unrealistic without robust error handling and fallback mechanisms'
   maintainability:
     status: CONCERNS
-    notes: 'Missing testing strategy and database schema design'
+    notes: 'No testing strategy, database design, or development standards defined'
 
 quality_score: 35
 expires: "2025-09-06T00:00:00Z"
@@ -73,16 +74,20 @@ evidence:
 
 recommendations:
   immediate:
-    - action: "Create technical architecture document covering database, API, and security design"
-      refs: ["docs/architecture/"]
-    - action: "Define testing strategy with API mocking and integration approaches"
+    - action: "Create technical architecture document covering database design, API integration, and security model"
+      refs: ["docs/architecture/technical-design.md"]
+    - action: "Define comprehensive testing strategy with ISP API mocking and automation framework"
       refs: ["docs/testing-strategy.md"]
-    - action: "Design database schema for efficient 12-month data storage"
+    - action: "Design optimized database schema for time-series data with 12-month retention policy"
       refs: ["docs/database-design.md"]
-    - action: "Implement credential rotation and secure key management strategy"
+    - action: "Implement secure credential management with rotation, monitoring, and key protection"
       refs: ["docs/security-architecture.md"]
+    - action: "Specify error handling patterns, fallback mechanisms, and graceful degradation strategies"
+      refs: ["docs/reliability-design.md"]
   future:
-    - action: "Consider ISP API rate limiting monitoring and adaptive polling"
+    - action: "Monitor ISP API patterns and implement adaptive polling based on stability metrics"
       refs: ["services/api-client.ts"]
-    - action: "Plan hosting resource scaling strategy for data growth"
+    - action: "Plan hosting resource scaling strategy with cost optimization for data growth"
       refs: ["docs/deployment-strategy.md"]
+    - action: "Develop comprehensive monitoring and alerting for system health and performance"
+      refs: ["docs/monitoring-strategy.md"]
