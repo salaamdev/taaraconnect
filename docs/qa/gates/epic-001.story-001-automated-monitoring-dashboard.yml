@@ -2,48 +2,49 @@ schema: 1
 story: "epic-001.story-001"
 story_title: "Automated Internet Usage Monitoring Dashboard"
 gate: CONCERNS
-status_reason: "Story has excellent requirements but lacks technical implementation details and has security/performance risks that need addressing."
+status_reason: "Excellent requirements but missing critical technical architecture and testing strategy before development can begin."
 reviewer: "Quinn (Test Architect)"
 updated: "2025-08-23T00:00:00Z"
 
 waiver: { active: false }
 
 top_issues:
+  - id: "ARCH-001"
+    severity: high
+    finding: "No database schema specified for 12-month historical data storage"
+    suggested_action: "Design efficient database schema with retention and archival strategy"
+  - id: "ARCH-002"
+    severity: high
+    finding: "API integration architecture completely missing"
+    suggested_action: "Define ISP API integration patterns, error handling, and retry logic"
+  - id: "TEST-001"
+    severity: high
+    finding: "Testing strategy completely undefined for ISP API integration"
+    suggested_action: "Create comprehensive testing strategy with API mocking approach"
   - id: "SEC-001"
     severity: high
     finding: "ISP credentials stored locally with encryption but no credential rotation strategy"
     suggested_action: "Implement credential refresh mechanism and secure key management"
   - id: "REL-001"
-    severity: high
+    severity: medium
     finding: "99% API polling reliability target may be unrealistic given ISP API instability"
     suggested_action: "Add graceful degradation and offline mode capabilities"
   - id: "PERF-001"
     severity: medium
     finding: "10-minute polling interval may stress budget hosting and ISP API"
     suggested_action: "Implement exponential backoff and adaptive polling intervals"
-  - id: "TEST-001"
-    severity: medium
-    finding: "No specific testing strategy for ISP API integration and mocking"
-    suggested_action: "Define API mocking strategy and integration test approach"
-  - id: "ARCH-001"
-    severity: medium
-    finding: "Database schema not specified for 12 months of historical data storage"
-    suggested_action: "Design efficient data retention and archival strategy"
-  - id: "REQ-001"
-    severity: low
-    finding: "Notification delivery channels need technical specification"
-    suggested_action: "Detail implementation approach for email, desktop, and web notifications"
 
 risk_summary:
-  totals: { critical: 0, high: 2, medium: 3, low: 1 }
+  totals: { critical: 0, high: 4, medium: 2, low: 0 }
   recommendations:
     must_fix: 
+      - "Create technical architecture document with database and API design"
+      - "Define comprehensive testing strategy with mocking approach"
       - "Implement secure credential management with rotation"
-      - "Design realistic API reliability targets with fallback modes"
+      - "Design ISP API integration patterns with error handling"
     monitor:
       - "Performance impact of polling frequency on budget hosting"
       - "ISP API rate limiting and stability patterns"
-      - "Data storage growth and retention costs"
 
 nfr_validation:
   _assessed: [security, performance, reliability, maintainability]
@@ -59,3 +60,29 @@ nfr_validation:
   maintainability:
     status: CONCERNS
     notes: 'Missing testing strategy and database schema design'
+
+quality_score: 35
+expires: "2025-09-06T00:00:00Z"
+
+evidence:
+  tests_reviewed: 0
+  risks_identified: 6
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]
+    ac_gaps: []
+
+recommendations:
+  immediate:
+    - action: "Create technical architecture document covering database, API, and security design"
+      refs: ["docs/architecture/"]
+    - action: "Define testing strategy with API mocking and integration approaches"
+      refs: ["docs/testing-strategy.md"]
+    - action: "Design database schema for efficient 12-month data storage"
+      refs: ["docs/database-design.md"]
+    - action: "Implement credential rotation and secure key management strategy"
+      refs: ["docs/security-architecture.md"]
+  future:
+    - action: "Consider ISP API rate limiting monitoring and adaptive polling"
+      refs: ["services/api-client.ts"]
+    - action: "Plan hosting resource scaling strategy for data growth"
+      refs: ["docs/deployment-strategy.md"]
