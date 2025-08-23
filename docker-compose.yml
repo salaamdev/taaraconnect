@@ -1,51 +1,66 @@
-version: '3.8'
-
 services:
-  postgres:
-    image: postgres:14
-    environment:
-      POSTGRES_DB: taara_monitoring
-      POSTGRES_USER: taara_user
-      POSTGRES_PASSWORD: taara_password
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    restart: unless-stopped
-
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    restart: unless-stopped
-
-  web:
-    build: .
+  app:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: taara-web
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql://taara_user:taara_password@postgres:5432/taara_monitoring
-      - REDIS_URL=redis://redis:6379/0
-    depends_on:
-      - postgres
-      - redis
+      - DATABASE_URL=sqlite:///./data/taara_monitoring.db
     volumes:
-      - .:/app
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./.env:/app/.env:ro
     restart: unless-stopped
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/api/data', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - taara-network
 
   scheduler:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: taara-scheduler
     environment:
-      - DATABASE_URL=postgresql://taara_user:taara_password@postgres:5432/taara_monitoring
-      - REDIS_URL=redis://redis:6379/0
-    depends_on:
-      - postgres
-      - redis
+      - DATABASE_URL=sqlite:///./data/taara_monitoring.db
     volumes:
-      - .:/app
-    restart: unless-stopped
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./.env:/app/.env:ro
     command: python scheduler.py
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - taara-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: taara-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./static:/usr/share/nginx/html/static:ro
+    depends_on:
+      - app
+    restart: unless-stopped
+    networks:
+      - taara-network
+
+networks:
+  taara-network:
+    driver: bridge
 
 volumes:
-  postgres_data:
+  data:
+  logs:
