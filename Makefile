@@ -1,7 +1,7 @@
 # Taara Internet Monitor - Production Makefile
 # Clean, minimal production deployment and management
 
-.PHONY: help install deploy start stop restart logs backup clean verify
+.PHONY: help install deploy start stop restart logs backup clean verify test
 
 # Default target
 help:
@@ -12,6 +12,7 @@ help:
 	@echo "  make install    - Install Docker and dependencies"
 	@echo "  make deploy     - Deploy application to production"
 	@echo "  make verify     - Verify production readiness"
+	@echo "  make test       - Test application with curl"
 	@echo ""
 	@echo "🔧 Management:"
 	@echo "  make start      - Start all services"
@@ -145,3 +146,33 @@ verify:
 	@echo "Log files: $$(find logs -name '*.log' 2>/dev/null | wc -l) files"
 	@echo "Backup files: $$(find backups -name '*.tar.gz' 2>/dev/null | wc -l) files"
 	@echo ""
+
+# Test application endpoints with curl
+test:
+	@echo "🧪 Testing Taara Monitor endpoints..."
+	@echo "====================================="
+	@echo ""
+	@echo "🔍 Testing health endpoint..."
+	@if curl -sf http://localhost/health >/dev/null 2>&1; then \
+		echo "✅ Health endpoint: OK"; \
+		curl -s http://localhost/health | head -3; \
+	else \
+		echo "❌ Health endpoint: FAILED"; \
+	fi
+	@echo ""
+	@echo "📊 Testing API data endpoint..."
+	@if curl -sf http://localhost/api/data >/dev/null 2>&1; then \
+		echo "✅ API data endpoint: OK"; \
+		curl -s http://localhost/api/data | head -3; \
+	else \
+		echo "❌ API data endpoint: FAILED"; \
+	fi
+	@echo ""
+	@echo "🌐 Testing dashboard..."
+	@if curl -sf http://localhost >/dev/null 2>&1; then \
+		echo "✅ Dashboard: OK"; \
+	else \
+		echo "❌ Dashboard: FAILED"; \
+	fi
+	@echo ""
+	@echo "🏁 Test complete!"
