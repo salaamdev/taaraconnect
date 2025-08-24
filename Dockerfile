@@ -23,6 +23,10 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Production stage
 FROM python:3.11-slim
 
+# Build argument for user ID (defaults to 1000)
+ARG USER_ID=1000
+ARG GROUP_ID=1000
+
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y \
     curl \
@@ -30,7 +34,7 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean
 
 # Create non-root user with proper permissions
-RUN groupadd -r taara && useradd -r -g taara -u 1001 taara
+RUN groupadd -r taara -g ${GROUP_ID} && useradd -r -g taara -u ${USER_ID} taara
 
 # Copy virtual environment from builder
 COPY --from=builder /opt/venv /opt/venv

@@ -3,6 +3,9 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile
+      args:
+        USER_ID: 1000
+        GROUP_ID: 1000
     image: taara-monitor:production
     container_name: taara-web-prod
     ports:
@@ -34,6 +37,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        USER_ID: 1000
+        GROUP_ID: 1000
     image: taara-monitor:production
     container_name: taara-scheduler-prod
     environment:

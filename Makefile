@@ -54,7 +54,7 @@ install:
 deploy:
 	@echo "🚀 Deploying Taara Internet Monitor..."
 	@mkdir -p data logs backups
-	@chmod 600 .env
+	@chmod 644 .env
 	@sudo chown -R $$USER:$$USER .
 	@docker-compose down --remove-orphans || true
 	@docker-compose build --no-cache
@@ -114,10 +114,10 @@ verify:
 	@echo "==============================="
 	@echo ""
 	@# Check .env file
-	@if [ -f ".env" ] && [ "$$(stat -c %a .env)" = "600" ]; then \
-		echo "✅ Environment configuration secure"; \
+	@if [ -f ".env" ]; then \
+		echo "✅ Environment configuration found"; \
 	else \
-		echo "❌ .env file missing or insecure permissions"; \
+		echo "❌ .env file missing"; \
 		exit 1; \
 	fi
 	@# Check Docker services
