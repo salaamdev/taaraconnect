@@ -9,6 +9,13 @@ Production-ready internet data usage monitoring system for Taara internet subscr
 - Valid Taara internet subscription
 
 ### 1. Configure Environment
+
+**Option A: Interactive Setup (Recommended)**
+```bash
+./setup-env.sh
+```
+
+**Option B: Manual Setup**
 ```bash
 cp .env.example .env
 # Edit .env with your Taara credentials
