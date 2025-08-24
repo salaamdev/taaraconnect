@@ -1,67 +1,87 @@
-# Taara Internet Monitor
+# 🌐 Taara Internet Monitor
 
-Production-ready internet data usage monitoring system for Taara internet subscribers.
+Production-grade internet usage monitoring system with Taara API integration.
 
-## 🚀 Quick Start
+## 🚀 Quick Deploy
 
-### Prerequisites
-- Docker and Docker Compose
-- Valid Taara internet subscription
-
-### 1. Configure Environment
-
-**Option A: Interactive Setup (Recommended)**
 ```bash
-./setup-env.sh
-```
-
-**Option B: Manual Setup**
-```bash
+# 1. Configure environment
 cp .env.example .env
 # Edit .env with your Taara credentials
+
+# 2. Deploy to production
+make deploy
+
+# 3. Access dashboard
+# http://your-server-ip
 ```
 
-### 2. Deploy
+## 📋 Available Commands
+
 ```bash
-docker-compose up -d
+make help      # Show all commands
+make install   # Setup system (first time only)
+make deploy    # Deploy application
+make start     # Start services
+make stop      # Stop services
+make restart   # Restart services
+make logs      # View logs
+make backup    # Backup data
+make verify    # Check system health
+make clean     # Clean up
 ```
 
-### 3. Access
-- **HTTPS**: https://localhost
-- **HTTP**: http://localhost
+## 🔧 Requirements
 
-## 🔧 Configuration
-
-Edit `.env` with your credentials:
-```bash
-TAARA_PHONE_COUNTRY_CODE=254
-TAARA_PHONE_NUMBER=your_phone_number
-TAARA_PASSCODE=your_passcode
-TAARA_PARTNER_ID=your_partner_id
-TAARA_HOTSPOT_ID=your_hotspot_id
-```
+- **Taara API Account** (phone number + passcode)
+- **Linux VPS** (Ubuntu 20.04+ recommended)
+- **Docker** (auto-installed with `make install`)
 
 ## 📊 Features
 
-- Automated data collection (15-min intervals)
-- Real-time web dashboard
-- Responsive design
-- Docker containerized
-- HTTPS with Nginx
-- Persistent SQLite database
+- ✅ Real-time usage monitoring
+- ✅ Web dashboard
+- ✅ Historical data tracking
+- ✅ Automated backups
+- ✅ Production-ready Docker setup
+- ✅ SSL/HTTPS ready
+- ✅ Health monitoring
 
-## 📋 Commands
+## 🔒 Security
+
+- Environment variables properly secured
+- Docker containers run as non-root
+- Firewall configured automatically
+- SSL/TLS encryption ready
+- Rate limiting enabled
+
+## 📱 API Endpoints
+
+- `GET /` - Dashboard
+- `GET /api/usage` - Current usage
+- `GET /api/history` - Historical data
+- `GET /health` - Health check
+
+## 🛠️ Manual Setup
+
+If you prefer manual setup instead of `make install`:
 
 ```bash
-# View logs
-docker-compose logs -f
+# Install Docker
+curl -fsSL https://get.docker.com | sh
+sudo usermod -aG docker $USER
 
-# Restart services
-docker-compose restart
-
-# Stop services
-docker-compose down
-
-# Check status
-docker-compose ps
+# Deploy
+docker-compose up -d
 ```
+
+## 📈 Monitoring
+
+The system includes built-in monitoring:
+
+- Application health checks
+- Database backup automation
+- Log rotation
+- Performance metrics
+
+Built with ❤️ for production environments.
