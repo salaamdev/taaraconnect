@@ -83,7 +83,7 @@
             </a>
             <div class="navbar-nav ms-auto">
                 <span class="navbar-text">
-                    <i class="fas fa-clock"></i> Last updated: <span id="lastUpdate">{{ latest_records[0].timestamp.strftime('%Y-%m-%d %H:%M:%S') if latest_records else 'Never' }}</span>
+                    <i class="fas fa-clock"></i> Last updated: <span id="lastUpdate">{{ latest_records[0].timestamp|local_time if latest_records else 'Never' }}</span>
                 </span>
             </div>
         </div>
@@ -203,7 +203,7 @@
                             <tbody>
                                 {% for record in latest_records %}
                                 <tr>
-                                    <td>{{ record.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                    <td>{{ record.timestamp|local_time }}</td>
                                     <td>{{ record.plan_name }}</td>
                                     <td>{{ "%.1f"|format(record.remaining_balance_gb) }}</td>
                                     <td>{{ record.expires_in_days }}</td>
@@ -277,17 +277,26 @@
         function updateLastUpdateTime() {
             const lastUpdateElement = document.getElementById('lastUpdate');
             const currentTime = new Date();
-            const lastUpdateTime = new Date('{{ latest_records[0].timestamp.isoformat() if latest_records else "" }}');
             
-            if (lastUpdateTime && !isNaN(lastUpdateTime.getTime())) {
-                const timeDiff = Math.floor((currentTime - lastUpdateTime) / 1000);
+            // Get the last update time - it's already converted to local time by the template filter
+            const lastUpdateText = lastUpdateElement.textContent;
+            if (lastUpdateText && lastUpdateText !== 'Never') {
+                // Parse the local time string (assuming format: YYYY-MM-DD HH:MM:SS)
+                const lastUpdateTime = new Date('{{ latest_records[0].timestamp.isoformat() if latest_records else "" }}');
                 
-                if (timeDiff < 60) {
-                    lastUpdateElement.textContent = `${timeDiff} seconds ago`;
-                } else if (timeDiff < 3600) {
-                    lastUpdateElement.textContent = `${Math.floor(timeDiff / 60)} minutes ago`;
-                } else {
-                    lastUpdateElement.textContent = lastUpdateTime.toLocaleString();
+                if (lastUpdateTime && !isNaN(lastUpdateTime.getTime())) {
+                    const timeDiff = Math.floor((currentTime - lastUpdateTime) / 1000);
+                    
+                    if (timeDiff < 60) {
+                        lastUpdateElement.textContent = `${timeDiff} seconds ago`;
+                    } else if (timeDiff < 3600) {
+                        lastUpdateElement.textContent = `${Math.floor(timeDiff / 60)} minutes ago`;
+                    } else if (timeDiff < 86400) {
+                        lastUpdateElement.textContent = `${Math.floor(timeDiff / 3600)} hours ago`;
+                    } else {
+                        // Show the original formatted local time
+                        lastUpdateElement.textContent = '{{ latest_records[0].timestamp|local_time if latest_records else "Never" }}';
+                    }
                 }
             }
         }

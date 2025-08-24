@@ -36,6 +36,9 @@ class Config:
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "production")
     
+    # Timezone settings
+    TIMEZONE: str = os.getenv("TIMEZONE", "Africa/Nairobi")  # East Africa Time (UTC+3)
+    
     # Security
     SECRET_KEY: str = os.getenv("SECRET_KEY", secrets.token_urlsafe(32))
     JWT_SECRET_KEY: str = os.getenv("JWT_SECRET_KEY", secrets.token_urlsafe(32))

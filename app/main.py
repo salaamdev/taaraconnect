@@ -11,6 +11,7 @@ import plotly.utils
 
 from app.database import get_db, DataUsageRecord, ApiLog, create_tables
 from app.data_collector import run_data_collection
+from app.timezone_utils import utc_to_local, format_local_time, get_timezone_info
 
 # Create FastAPI app
 app = FastAPI(title="Taara Internet Monitor", version="1.0.0")
@@ -21,6 +22,13 @@ create_tables()
 # Mount static files and templates
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
+
+# Add custom template filters
+def local_time_filter(dt):
+    """Jinja2 filter to convert UTC time to local time"""
+    return format_local_time(dt)
+
+templates.env.filters['local_time'] = local_time_filter
 
 @app.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request, db: Session = Depends(get_db)):
@@ -78,6 +86,7 @@ async def get_latest_data(db: Session = Depends(get_db)):
         {
             "id": record.id,
             "timestamp": record.timestamp.isoformat(),
+            "timestamp_local": format_local_time(record.timestamp),
             "plan_name": record.plan_name,
             "remaining_balance_gb": record.remaining_balance_gb,
             "expires_in_days": record.expires_in_days,
@@ -116,6 +125,11 @@ async def trigger_collection():
             return {"status": "error", "message": "Data collection failed"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/timezone")
+async def get_timezone_info_endpoint():
+    """Get timezone information"""
+    return get_timezone_info()
 
 @app.get("/api/stats")
 async def get_statistics(db: Session = Depends(get_db)):
