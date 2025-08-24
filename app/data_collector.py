@@ -4,6 +4,7 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 from app.database import SessionLocal, DataUsageRecord, ApiLog
 from app.taara_api import TaaraAPI
+from app.config import Config
 import os
 
 # Configure logging
@@ -13,11 +14,11 @@ logger = logging.getLogger(__name__)
 class DataCollector:
     def __init__(self):
         self.api = TaaraAPI(
-            phone_country_code=os.getenv("TAARA_PHONE_COUNTRY_CODE", "254"),
-            phone_number=os.getenv("TAARA_PHONE_NUMBER", "718920243"),
-            passcode=os.getenv("TAARA_PASSCODE", "888344"),
-            partner_id=os.getenv("TAARA_PARTNER_ID", "313324693"),
-            hotspot_id=os.getenv("TAARA_HOTSPOT_ID", "596370186")
+            phone_country_code=Config.TAARA_PHONE_COUNTRY_CODE,
+            phone_number=Config.TAARA_PHONE_NUMBER,
+            passcode=Config.TAARA_PASSCODE,
+            partner_id=Config.TAARA_PARTNER_ID,
+            hotspot_id=Config.TAARA_HOTSPOT_ID
         )
     
     def log_api_call(self, db: Session, endpoint: str, method: str, 
