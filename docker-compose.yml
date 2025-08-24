@@ -1,37 +1,50 @@
+version: '3.8'
+
 services:
   app:
     build: 
       context: .
       dockerfile: Dockerfile
-    container_name: taara-web
+    image: taara-monitor:production
+    container_name: taara-web-prod
     ports:
       - "8000:8000"
     environment:
       - DATABASE_URL=sqlite:///./data/taara_monitoring.db
+      - PYTHONUNBUFFERED=1
     volumes:
-      - ./data:/app/data
-      - ./logs:/app/logs
+      - ./data:/app/data:rw
+      - ./logs:/app/logs:rw
+      - ./backups:/app/backups:rw
       - ./.env:/app/.env:ro
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/api/data', timeout=5)"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/data"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
     networks:
       - taara-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   scheduler:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: taara-scheduler
+    image: taara-monitor:production
+    container_name: taara-scheduler-prod
     environment:
       - DATABASE_URL=sqlite:///./data/taara_monitoring.db
+      - PYTHONUNBUFFERED=1
     volumes:
-      - ./data:/app/data
-      - ./logs:/app/logs
+      - ./data:/app/data:rw
+      - ./logs:/app/logs:rw
+      - ./backups:/app/backups:rw
       - ./.env:/app/.env:ro
     command: python scheduler.py
     restart: unless-stopped
@@ -40,10 +53,15 @@ services:
         condition: service_healthy
     networks:
       - taara-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   nginx:
     image: nginx:alpine
-    container_name: taara-nginx
+    container_name: taara-nginx-prod
     ports:
       - "80:80"
       - "443:443"
@@ -56,11 +74,55 @@ services:
     restart: unless-stopped
     networks:
       - taara-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Production backup service
+  backup:
+    image: taara-monitor:production
+    container_name: taara-backup-prod
+    environment:
+      - DATABASE_URL=sqlite:///./data/taara_monitoring.db
+    volumes:
+      - ./data:/app/data:rw
+      - ./backups:/app/backups:rw
+      - ./.env:/app/.env:ro
+    command: |
+      sh -c "
+        while true; do
+          sleep 86400;  # Run daily
+          echo 'Starting backup...';
+          mkdir -p /app/backups/\$$(date +%Y-%m-%d);
+          cp /app/data/taara_monitoring.db /app/backups/\$$(date +%Y-%m-%d)/taara_monitoring_\$$(date +%H%M%S).db;
+          find /app/backups -type f -mtime +30 -delete;  # Clean old backups
+          echo 'Backup completed';
+        done
+      "
+    restart: unless-stopped
+    depends_on:
+      - app
+    networks:
+      - taara-network
 
 networks:
   taara-network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
 
 volumes:
   data:
+    driver: local
   logs:
+    driver: local
+  backups:
+    driver: local

@@ -1,13 +1,50 @@
 # Production dependencies for Taara Internet Monitor
+# Core web framework
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
+
+# Database
 sqlalchemy==2.0.23
-pydantic==2.5.0
+alembic==1.13.1
+
+# HTTP client and validation
 requests==2.31.0
+pydantic==2.5.0
+
+# Date/time utilities
 python-dateutil==2.8.2
+
+# Visualization
 plotly==5.17.0
+
+# File handling and templates
 aiofiles==23.2.1
 jinja2==3.1.2
+
+# Task scheduling
 schedule==1.2.0
+
+# Environment management
 python-dotenv==1.0.0
+
+# Production WSGI server
 gunicorn==21.2.0
+
+# Security enhancements
+cryptography==41.0.7
+bcrypt==4.1.2
+
+# Monitoring and logging
+sentry-sdk[fastapi]==1.38.0
+structlog==23.2.0
+
+# Performance
+redis==5.0.1
+celery==5.3.4
+
+# Development and testing (optional)
+pytest==7.4.3
+pytest-asyncio==0.21.1
+
+# Database migrations
+yoyo-migrations==8.2.0
